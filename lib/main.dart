@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:userlist_bloc_experience/features/user_list/bloc/user_bloc.dart';
 import 'package:userlist_bloc_experience/bloc/states/user_state.dart';
 import 'package:userlist_bloc_experience/features/user_list/domain/entities/user.dart';
@@ -56,108 +57,118 @@ class _MyListState extends State<MyList> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: StreamBuilder<UserState>(
-          stream: userBloc.stream,
-          builder: (context, AsyncSnapshot<UserState> snapshot) {
-            final userList = snapshot.data?.users ?? [];
+        child: BlocBuilder<UserBlock, UserState>(
+          bloc: userBloc,
+          builder: (context, state) {
+            if (state is UserInitialState) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-            return Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple,
+            if (state is UserAddSuccessState) {
+              final userList = state.users;
+
+              return Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 12, top: 12),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Users",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      userBloc.add(
+                                        AddUserToListEvent(
+                                          user: User(name: "Vinícius"),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.person_add,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      userBloc.add(
+                                        LoadUserListEvent(),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Hold an user card to delete",
+                              style: TextStyle(color: Colors.white60),
+                            ),
+                          ),
+                          SizedBox(height: 24)
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 12, top: 12),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Users",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                  ),
+                  Expanded(
+                    child: Scrollbar(
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (context, index) => ListTile(
+                          onLongPress: () {
+                            userBloc.add(
+                              RemoveUserFromListEvent(
+                                user: userList[index],
+                              ),
+                            );
+                          },
+                          title: Text(userList[index].name),
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.deepPurple,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: Text(
+                                userList[index].name.substring(0, 1),
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    userBloc.add(
-                                      AddUserToListEvent(
-                                        user: User(name: "Vinícius"),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.person_add,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    userBloc.add(
-                                      LoadUserListEvent(),
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.refresh,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Hold an user card to delete",
-                            style: TextStyle(color: Colors.white60),
                           ),
                         ),
-                        SizedBox(height: 24)
-                      ],
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                ),
-                Expanded(
-                  child: Scrollbar(
-                    child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (context, index) => ListTile(
-                        onLongPress: () {
-                          userBloc.add(
-                            RemoveUserFromListEvent(
-                              user: userList[index],
-                            ),
-                          );
-                        },
-                        title: Text(userList[index].name),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.deepPurple,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Text(
-                              userList[index].name.substring(0, 1),
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
+                        itemCount: userList.length,
                       ),
-                      itemCount: userList.length,
                     ),
-                  ),
-                )
-              ],
-            );
+                  )
+                ],
+              );
+            }
+
+            return SizedBox.shrink();
           },
         ),
       ),
