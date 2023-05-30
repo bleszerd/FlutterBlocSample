@@ -43,12 +43,12 @@ class _MyListState extends State<MyList> {
     StatusBarUtils.setColor(Brightness.light, Colors.deepPurple);
 
     userBloc = UserBlock();
-    userBloc.inputUser.add(LoadUserListEvent());
+    userBloc.add(LoadUserListEvent());
   }
 
   @override
   void dispose() {
-    userBloc.inputUser.close();
+    userBloc.close();
     super.dispose();
   }
 
@@ -87,7 +87,7 @@ class _MyListState extends State<MyList> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    userBloc.inputUser.add(
+                                    userBloc.add(
                                       AddUserToListEvent(
                                         user: User(name: "Vinícius"),
                                       ),
@@ -100,7 +100,7 @@ class _MyListState extends State<MyList> {
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    userBloc.inputUser.add(
+                                    userBloc.add(
                                       LoadUserListEvent(),
                                     );
                                   },
@@ -134,7 +134,7 @@ class _MyListState extends State<MyList> {
                       scrollDirection: Axis.vertical,
                       itemBuilder: (context, index) => ListTile(
                         onLongPress: () {
-                          userBloc.inputUser.add(
+                          userBloc.add(
                             RemoveUserFromListEvent(
                               user: userList[index],
                             ),
